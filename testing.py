@@ -1,4 +1,5 @@
 import finnhub
+from datetime import datetime, timedelta
 
 # Configure API key
 configuration = finnhub.Configuration(
@@ -9,6 +10,14 @@ configuration = finnhub.Configuration(
 
 finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 
+#dt = datetime.today()
+#dt2 = datetime.today() - timedelta(days=7)
+
+#string = dt.strftime("%Y-%d-%m")
+#string2 = dt2.strftime("%Y-%d-%m")
+#print(string)
+#print(string2)
+#print(datetime.today() - timedelta(days=7))
 # Stock candles
 #print(finnhub_client.stock_candles('AAPL', 'D', 1590988249, 1591852249))
 
@@ -16,7 +25,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.aggregate_indicator('AAPL', 'D'))
 
 # Basic financials
-print(finnhub_client.company_basic_financials('AAPL', 'margin'))
+#print(finnhub_client.company_basic_financials('AAPL', 'margin'))
 
 # Earnings surprises
 #print(finnhub_client.company_earnings('TSLA', limit=5))
@@ -29,7 +38,7 @@ print(finnhub_client.company_basic_financials('AAPL', 'margin'))
 
 # Company News
 # Need to use _from instead of from to avoid conflict
-#print(finnhub_client.company_news('AAPL', _from="2020-06-01", to="2020-06-10"))
+print(finnhub_client.company_news('AAPLs', _from="2020-07-01", to="2020-07-08"))
 
 # Company Peers
 #print(finnhub_client.company_peers('AAPL'))
@@ -91,7 +100,7 @@ print(finnhub_client.company_basic_financials('AAPL', 'margin'))
 #print(finnhub_client.major_developments('AAPL', _from="2020-01-01", to="2020-12-31"))
 
 # News sentiment
-#print(finnhub_client.news_sentiment('AAPL'))
+#print(finnhub_client.news_sentiment('RTX'))
 
 # Pattern recognition
 #print(finnhub_client.pattern_recognition('AAPL', 'D'))
@@ -101,6 +110,7 @@ print(finnhub_client.company_basic_financials('AAPL', 'margin'))
 
 # Quote
 #print(finnhub_client.quote('AAPL'))
+#print(finnhub_client.quote('AAPsL'))
 
 # Recommendation trends
 #print(finnhub_client.recommendation_trends('AAPL'))
