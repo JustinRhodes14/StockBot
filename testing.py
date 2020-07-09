@@ -38,18 +38,18 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 
 # Company News
 # Need to use _from instead of from to avoid conflict
-print(finnhub_client.company_news('AAPLs', _from="2020-07-01", to="2020-07-08"))
+#print(finnhub_client.company_news('RTX', _from="2020-07-01", to="2020-07-08"))
 
 # Company Peers
 #print(finnhub_client.company_peers('AAPL'))
 
 # Company Profile
-#print(finnhub_client.company_profile(symbol='AAPL'))
+#print(finnhub_client.company_profile(symbol='RTX'))
 #print(finnhub_client.company_profile(isin='US0378331005'))
 #print(finnhub_client.company_profile(cusip='037833100'))
 
 # Company Profile 2
-#print(finnhub_client.company_profile2(symbol='AAPL'))
+print(finnhub_client.company_profile2(symbol='DAL'))
 
 # Revenue Estimates
 #print(finnhub_client.company_revenue_estimates('TSLA', freq='quarterly'))
@@ -88,7 +88,7 @@ print(finnhub_client.company_news('AAPLs', _from="2020-07-01", to="2020-07-08"))
 #print(finnhub_client.fund_ownership('AMZN', limit=5))
 
 # General news
-#print(finnhub_client.general_news('forex', min_id=0))
+print(finnhub_client.general_news('forex', min_id=0))
 
 # Investors ownership
 #print(finnhub_client.investors_ownership('AAPL', limit=5))
