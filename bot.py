@@ -102,7 +102,7 @@ async def cnews(ctx,stock,number):
         )
         embed.set_thumbnail(url= data2.logo)
         embed.set_image(url= item.image)
-        embed.add_field(name='Summary',value= desc,inline=False)
+        embed.add_field(name='Summary :arrow_down_small: ',value= desc,inline=False)
         embed.set_footer(text= f"{data2.ticker} - {data2.exchange} - {data2.country}")
 
         await ctx.send(embed=embed)
