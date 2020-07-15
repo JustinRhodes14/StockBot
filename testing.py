@@ -25,7 +25,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.aggregate_indicator('AAPL', 'D'))
 
 # Basic financials
-#print(finnhub_client.company_basic_financials('AAPL', 'margin'))
+print(finnhub_client.company_basic_financials('TWTR', 'margin'))
 
 # Earnings surprises
 #print(finnhub_client.company_earnings('TSLA', limit=5))
@@ -38,7 +38,11 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 
 # Company News
 # Need to use _from instead of from to avoid conflict
-#print(finnhub_client.company_news('RTX', _from="2020-07-01", to="2020-07-08"))
+#print(finnhub_client.company_news('GOOGL', _from="2020-07-01", to="2020-07-08"))
+
+#f = open("CS.png","r")
+
+#print(type(f))
 
 # Company Peers
 #print(finnhub_client.company_peers('AAPL'))
@@ -49,7 +53,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.company_profile(cusip='037833100'))
 
 # Company Profile 2
-print(finnhub_client.company_profile2(symbol='DAL'))
+#print(finnhub_client.company_profile2(symbol='DAL'))
 
 # Revenue Estimates
 #print(finnhub_client.company_revenue_estimates('TSLA', freq='quarterly'))
@@ -88,7 +92,7 @@ print(finnhub_client.company_profile2(symbol='DAL'))
 #print(finnhub_client.fund_ownership('AMZN', limit=5))
 
 # General news
-print(finnhub_client.general_news('forex', min_id=0))
+#print(finnhub_client.general_news('forex', min_id=0))
 
 # Investors ownership
 #print(finnhub_client.investors_ownership('AAPL', limit=5))

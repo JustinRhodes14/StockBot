@@ -1,12 +1,32 @@
 #BUGS
 #RTX doesnt work since it returns None for its company profile I'm assuming (for both cnews and quote)
 #Some stocks don't have pictures (DAL), should use a placeholder value (same with above RTX bug)
+
+#Individual peoples portfolios
+    #Show current prices of peoples lists (only current prices) - Big task, need database (server)
+
+#Analyze
+    #Robinhood analytics - Recommendation Trends
+
+#History of P/E ratio
+#Alerts? - Maybe use yahoo
+#Given a ticker, what ETFs is the index in?
+    #What is the purpose of this ETF, more about the ETF
+#More data
+    #Market cap, outstanding shares, dividends, quarterly based, earnings reports, announced next earnings reports?
+    #Equity to Debt ratio
+#General purpose queries
+    #Top movers, bottom movers, range, (bottom x top x)
 import os
 import random
 from dotenv import load_dotenv
 import finnhub
 import math
 from datetime import datetime, timedelta
+from pandas_datareader import data
+from bokeh.plotting import figure, show, output_file
+from bokeh.io import export_png
+from selenium.webdriver import Chrome, ChromeOptions
 
 # Configure API key
 configuration = finnhub.Configuration(
@@ -27,6 +47,15 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 # 2
 bot = commands.Bot(command_prefix='!')
 
+def inc_dec(c, o):
+    if c > o:
+        value = "Increase"
+    elif c < o:
+        value = "Decrease"
+    else:
+        value = "Equal"
+    return value
+
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
@@ -35,10 +64,11 @@ async def on_ready():
 async def ponging(ctx):
     await ctx.send(f"pong {math.trunc(bot.latency * 1000)} ms")
 
-@bot.command(name="quote")
+@bot.command(name="quote") #P.E Ratio, Div Yield Ratio, beta, (alpha), ranges of dates - 1 year high
 async def quote(ctx,*,stock):
     data = finnhub_client.quote(stock.upper())
-    
+
+
     opening = data.o
     high = data.h
     low = data.l
@@ -72,11 +102,9 @@ async def cnews(ctx,stock,number):
     dt = datetime.today() #1 week news report
     dt2 = datetime.today() - timedelta(days=7)
 
-    end = dt.strftime("%Y-%d-%m")
-    start = dt2.strftime("%Y-%d-%m")
-
-    data = finnhub_client.company_news(stock.upper(), _from=start, to=end)
-
+    end = dt.strftime("%Y-%m-%d")
+    start = dt2.strftime("%Y-%m-%d")
+    data = finnhub_client.company_news(stock.upper(),_from=start,to=end)
     if (len(data) == 0):
         await ctx.send(f"The stock ***{stock.upper()}*** does not exist, please try again.")
         return
@@ -108,6 +136,69 @@ async def cnews(ctx,stock,number):
         await ctx.send(embed=embed)
     
 
+@bot.command(name="chart") #implement week, half year, full year, 5 year
+async def chart(ctx,stock):
+    stock2 = stock.upper()
+    end = datetime.today()
+    start = datetime.today() - timedelta(days=365)
+    try:
+        df = data.DataReader(name=stock2,data_source="yahoo",start=start,end=end)
+    except:
+        await ctx.send(f"The stock ***{stock2}*** could not be found, please try again.")
+        return
+    df["Status"] = [inc_dec(c,o) for c,o in zip(df.Close,df.Open)]
+    df["Middle"] = (df.Open+df.Close)/2
+    df["Height"] = abs(df.Open-df.Close)
+
+    p = figure(x_axis_type='datetime',width=1000,height=300,sizing_mode="fixed")
+    p.grid.grid_line_alpha= 0.3
+
+    hours_12 = 12*60*60*1000 #12 hours in milliseconds
+
+    p.segment(df.index,df.High,df.index,df.Low,color="Black")
+
+    p.rect(df.index[df.Status=="Increase"],df.Middle[df.Status=="Increase"],
+        hours_12, df.Height[df.Status=="Increase"],fill_color="#CCFFFF",line_color="black")#y coordinate starts from the middle, x coordinate is where close > open
+
+    p.rect(df.index[df.Status=="Decrease"],df.Middle[df.Status=="Decrease"],
+        hours_12, df.Height[df.Status=="Decrease"],fill_color="#FF3333",line_color="black") #day opened with a higher price
+
+    options = ChromeOptions()
+    options.add_argument("--headless")
+
+    web_driver = Chrome(executable_path= "C:\Python38\Lib\site-packages\chromedriver.exe",options = options)
+
+    #output_file("CS.html")
+    export_png(p,filename="CS.png",webdriver = web_driver)
+
+    data2 = finnhub_client.company_profile2(symbol=stock2)
+    embed = discord.Embed(
+        title = stock2 + " Half-Year Chart",
+        description = f"Candlestick data for {data2.name}",
+        colour = discord.Colour.dark_gold()
+        )
+    embed.set_thumbnail(url= data2.logo)
+    #embed.set_image(url= "file:///E:/Projects/Stonk%20Bot/CS.png")
+    embed.set_footer(text= f"{data2.ticker} - {data2.exchange} - {data2.country}")
+
+    fileThing = open("CS.png","rb")
+    f = discord.File(fileThing,"ChartData.png",spoiler = False)
+    await ctx.send(embed=embed)
+    await ctx.send(file= f)
+
+@bot.command(name="helpme")
+async def help(ctx):
+    embed = discord.Embed(
+        title = "Stock Bot - User Guide",
+        description = "All the possibilities of the Stock bot!",
+        colour = discord.Colour.gold()
+        )
+    embed.set_thumbnail(url= "https://cdn.shopify.com/s/files/1/2118/1625/products/000786a-6_2000x2000.png?v=1586266264")
+    embed.add_field(name='!quote <STOCK_TICKER>', value = "Returns the stock's prices for the day (opening, low, high, closing, previous closing)" ,inline = False)
+    embed.add_field(name='!chart <STOCK_TICKER>', value = "Returns a half-year candlestick chart for a given stock" ,inline = False)
+    embed.add_field(name='!cnews <STOCK_TICKER> <ARTICLE_NUMBER>', value = "Returns a news article for a given stock (normally only yields 200 articles)" ,inline = False)
+    await ctx.send(embed=embed)
+
 @bot.command(name="exit")
 async def exit(ctx):
     await ctx.send("Shutting Down")
@@ -122,5 +213,10 @@ async def cnews_error(ctx,error):
 async def quote_error(ctx,error):
     if isinstance(error,commands.MissingRequiredArgument):
         await ctx.send("Invalid arguments, the command should look like the following: !quote <STOCK_SYMBOL> (without the brackets).")
+
+@chart.error
+async def chart_error(ctx,error):
+    if isinstance(error,commands.MissingRequiredArgument):
+        await ctx.send("Invalid arguments, the command should look like the following: !chart <STOCK_SYMBOL> (without the brackets).")
 
 bot.run(TOKEN)
