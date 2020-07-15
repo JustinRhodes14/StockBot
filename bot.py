@@ -77,7 +77,7 @@ async def on_ready():
 async def ponging(ctx):
     await ctx.send(f"pong {math.trunc(bot.latency * 1000)} ms")
 
-@bot.command(name="quote") #Div Yield Ratio
+@bot.command(name="quote") 
 async def quote(ctx,*,stock):
     data = finnhub_client.quote(stock.upper())
     otherData = finnhub_client.company_basic_financials(stock.upper(), 'all')
