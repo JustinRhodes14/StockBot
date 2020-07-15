@@ -28,14 +28,7 @@ from bokeh.plotting import figure, show, output_file
 from bokeh.io import export_png
 from selenium.webdriver import Chrome, ChromeOptions
 
-# Configure API key
-configuration = finnhub.Configuration(
-    api_key={
-        'token': 'bs1oipfrh5rbe4rks0i0' # Replace this
-    }
-)
 
-finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 
 # 1
 from discord.ext import commands
@@ -43,6 +36,15 @@ import discord
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+
+# Configure API key
+configuration = finnhub.Configuration(
+    api_key={
+        'token': os.getenv('FINNHUB_TOKEN') # Replace this
+    }
+)
+
+finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 
 # 2
 bot = commands.Bot(command_prefix='!')
