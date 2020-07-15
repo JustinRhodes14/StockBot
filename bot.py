@@ -77,34 +77,44 @@ async def on_ready():
 async def ponging(ctx):
     await ctx.send(f"pong {math.trunc(bot.latency * 1000)} ms")
 
-@bot.command(name="quote") #P.E Ratio, Div Yield Ratio, beta, (alpha), ranges of dates - 1 year high
+@bot.command(name="quote") #Div Yield Ratio
 async def quote(ctx,*,stock):
     data = finnhub_client.quote(stock.upper())
+    otherData = finnhub_client.company_basic_financials(stock.upper(), 'all')
 
-
-    opening = data.o
-    high = data.h
-    low = data.l
     current = data.c
+    high = otherData.metric["52WeekHigh"]
+    low = otherData.metric["52WeekLow"]
     prevclose = data.pc
+    beta = otherData.metric["beta"]
+    peRatio = otherData.metric["peInclExtraTTM"]
+    marketCap = otherData.metric["marketCapitalization"]
+    divYield = float(otherData.metric["currentDividendYieldTTM"])
+    if divYield <= 0:
+        divYield2 = "N/A"
+    else:
+        divYield2 = str(divYield)
 
-    if (opening == None and high == None and low == None and current == None and prevclose == None):
+    if (high == None and low == None and current == None and prevclose == None):
         
         await ctx.send(f"The stock ***{stock.upper()}*** does not exist, please try again.")
     else:
         data2 = finnhub_client.company_profile2(symbol=stock)
         embed = discord.Embed(
         title = data2.name,
-        description = stock,
+        description = stock.upper(),
         colour = discord.Colour.green()
         )
         
         embed.set_thumbnail(url=data2.logo)
-        embed.add_field(name='Opening Price', value = f"${opening}",inline = False)
-        embed.add_field(name='High Price', value = f"${high}",inline = False)
-        embed.add_field(name='Low Price', value = f"${low}",inline = False)
         embed.add_field(name='Current Price', value = f"${current}",inline = False)
+        embed.add_field(name='52 Wk High', value = f"${high}",inline = False)
+        embed.add_field(name='52 Wk Low', value = f"${low}",inline = False)
         embed.add_field(name='Previous Closing Price', value = f"${prevclose}",inline = False)
+        embed.add_field(name='Beta', value = f"{beta}",inline = False)
+        embed.add_field(name='P/E Ratio (Trailing 12 Months)', value = f"{peRatio}",inline = False)
+        embed.add_field(name='Market Cap', value = f"${marketCap}M",inline = False)
+        embed.add_field(name='Div/Yield', value = f"{divYield2}",inline = False)
         embed.set_footer(text=f"{data2.exchange} - {data2.country}")
         await ctx.send(embed=embed)
         #await ctx.send(f"Here are todays prices for ***{stock.upper()}***:\n Opening price: ${opening}\n High price: ${high}\n Low price: ${low}\n Current price: ${current}\n Previous closing price: ${prevclose}")

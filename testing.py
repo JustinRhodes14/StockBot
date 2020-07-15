@@ -25,7 +25,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.aggregate_indicator('AAPL', 'D'))
 
 # Basic financials
-#print(finnhub_client.company_basic_financials('TWTR', 'margin'))
+print(finnhub_client.company_basic_financials('TWTR', 'all').metric["currentDividendYieldTTM"])
 
 # Earnings surprises
 #print(finnhub_client.company_earnings('TSLA', limit=5))
