@@ -56,6 +56,17 @@ def inc_dec(c, o):
         value = "Equal"
     return value
 
+def time(entry):
+    if entry == "HY":
+        return 180
+    elif entry == "Y":
+        return 365
+    elif entry == "WK":
+        return 7
+    elif entry == "5Y":
+        return 1825
+    return -1 #bad entry
+
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
@@ -136,16 +147,25 @@ async def cnews(ctx,stock,number):
         await ctx.send(embed=embed)
     
 
-@bot.command(name="chart") #implement week, half year, full year, 5 year
-async def chart(ctx,stock):
+@bot.command(name="chart")
+async def chart(ctx,stock,span):
     stock2 = stock.upper()
+    span2 = span.upper()
+    timeVal = time(span2)
+
+    if timeVal == -1:
+        await ctx.send(f"Invalid argument {span2}, charts can be given as Weekly (WK), Half Year (HY), Yearly (Y), or 5 Year (5Y).")
+        return
+    
     end = datetime.today()
-    start = datetime.today() - timedelta(days=365)
+    start = datetime.today() - timedelta(days=timeVal)
+
     try:
         df = data.DataReader(name=stock2,data_source="yahoo",start=start,end=end)
     except:
         await ctx.send(f"The stock ***{stock2}*** could not be found, please try again.")
         return
+    
     df["Status"] = [inc_dec(c,o) for c,o in zip(df.Close,df.Open)]
     df["Middle"] = (df.Open+df.Close)/2
     df["Height"] = abs(df.Open-df.Close)
@@ -195,7 +215,7 @@ async def help(ctx):
         )
     embed.set_thumbnail(url= "https://cdn.shopify.com/s/files/1/2118/1625/products/000786a-6_2000x2000.png?v=1586266264")
     embed.add_field(name='!quote <STOCK_TICKER>', value = "Returns the stock's prices for the day (opening, low, high, closing, previous closing)" ,inline = False)
-    embed.add_field(name='!chart <STOCK_TICKER>', value = "Returns a half-year candlestick chart for a given stock" ,inline = False)
+    embed.add_field(name='!chart <STOCK_TICKER> <TIME_RANGE>', value = "Returns a half-year candlestick chart for a given stock (Time ranges are as follows:\n Weekly = WK, Half Year = HY, Yearly = Y, Five Year = 5Y" ,inline = False)
     embed.add_field(name='!cnews <STOCK_TICKER> <ARTICLE_NUMBER>', value = "Returns a news article for a given stock (normally only yields 200 articles)" ,inline = False)
     await ctx.send(embed=embed)
 
