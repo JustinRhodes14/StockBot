@@ -2,7 +2,7 @@
 #RTX doesnt work since it returns None for its company profile I'm assuming (for both cnews and quote)
 #Some stocks don't have pictures (DAL), should use a placeholder value (same with above RTX bug)
 
-#Individual peoples portfolios
+#Individual peoples portfolios - Ehhh
     #Show current prices of peoples lists (only current prices) - Big task, need database (server)
 
 #Analyze
@@ -10,13 +10,15 @@
 
 #History of P/E ratio
 #Alerts? - Maybe use yahoo
-#Given a ticker, what ETFs is the index in?
-    #What is the purpose of this ETF, more about the ETF
 #More data
     #Market cap, outstanding shares, dividends, quarterly based, earnings reports, announced next earnings reports?
     #Equity to Debt ratio
 #General purpose queries
     #Top movers, bottom movers, range, (bottom x top x)
+#News Sentiment
+
+#UP NEXT
+#News sentiment anaylsis (graph) ,  (recommendation trends) Analysis (robinhood thing) - maybe make a graph, top/bottom movers
 import os
 import random
 from dotenv import load_dotenv

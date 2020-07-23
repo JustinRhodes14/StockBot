@@ -25,7 +25,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.aggregate_indicator('AAPL', 'D'))
 
 # Basic financials
-print(finnhub_client.company_basic_financials('TWTR', 'all').metric["currentDividendYieldTTM"])
+#print(finnhub_client.company_basic_financials('TWTR', 'all').metric["currentDividendYieldTTM"])
 
 # Earnings surprises
 #print(finnhub_client.company_earnings('TSLA', limit=5))
@@ -104,7 +104,7 @@ print(finnhub_client.company_basic_financials('TWTR', 'all').metric["currentDivi
 #print(finnhub_client.major_developments('AAPL', _from="2020-01-01", to="2020-12-31"))
 
 # News sentiment
-#print(finnhub_client.news_sentiment('RTX'))
+#print(finnhub_client.news_sentiment('AAPL'))
 
 # Pattern recognition
 #print(finnhub_client.pattern_recognition('AAPL', 'D'))
@@ -117,7 +117,7 @@ print(finnhub_client.company_basic_financials('TWTR', 'all').metric["currentDivi
 #print(finnhub_client.quote('AAPsL'))
 
 # Recommendation trends
-#print(finnhub_client.recommendation_trends('AAPL'))
+print(finnhub_client.recommendation_trends('AAPL'))
 
 # Stock dividends
 #print(finnhub_client.stock_dividends('KO', _from='2019-01-01', to='2020-01-01'))
