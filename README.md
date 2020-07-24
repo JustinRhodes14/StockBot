@@ -6,7 +6,7 @@ NOTE: This project is still in development, it currently has three fully fleshed
 
 # About Stockly
 
-I started working on Stockly as a way to learn more about Python, as well as to experiment more with retrieving data, and turning it into something more meaningful for a user. My technical stack involved Python, Bokeh, Pandas, Finnhub's API (Stock data library), and Discord's API. Currently there are only 3 commands, however as of now, I plan on adding three more commands. Once I finish the bot I plan on deploying it to a server so me and my friends can always use it even when I'm not running it on my own computer.
+I started working on Stockly as a way to learn more about Python, as well as to experiment more with retrieving data, and turning it into something more meaningful for a user. Another motivation for this project was for me to learn more about the stock market, and provide a useful tool to myself and my friends as we get more involved with investing. My technical stack consisted of Python, Bokeh, Pandas, Finnhub's API (Stock data library), and Discord's API. Currently there are only 3 commands, however as of now, I plan on adding three more commands. Once I finish the bot I plan on deploying it to a server so me and my friends can always use it even when I'm not running it on my own computer.
 
 # General
 Currently there are three commands, I will add more to the list as I work on this project more. The commands are listed below with a description;
