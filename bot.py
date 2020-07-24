@@ -71,6 +71,17 @@ def time(entry):
         return 1825
     return -1 #bad entry
 
+def time2(entry):
+    if entry == 180:
+        return " Half-Year Chart"
+    elif entry == 365:
+        return " Yearly Chart"
+    elif entry == 7:
+        return " Weekly Chart"
+    elif entry == 1825:
+        return " 5-Year Chart"
+    return -1 #bad entry
+
 @bot.event
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
@@ -101,7 +112,7 @@ async def quote(ctx,*,stock):
         
         await ctx.send(f"The stock ***{stock.upper()}*** does not exist, please try again.")
     else:
-        data2 = finnhub_client.company_profile2(symbol=stock)
+        data2 = finnhub_client.company_profile2(symbol=stock.upper())
         embed = discord.Embed(
         title = data2.name,
         description = stock.upper(),
@@ -207,7 +218,7 @@ async def chart(ctx,stock,span):
 
     data2 = finnhub_client.company_profile2(symbol=stock2)
     embed = discord.Embed(
-        title = stock2 + " Half-Year Chart",
+        title = stock2 + time2(timeVal),
         description = f"Candlestick data for {data2.name}",
         colour = discord.Colour.dark_gold()
         )
