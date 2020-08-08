@@ -231,6 +231,10 @@ async def chart(ctx,stock,span):
     await ctx.send(embed=embed)
     await ctx.send(file= f)
 
+@bot.command(name="recommend")
+async def chart(ctx,stock):
+    #todo
+
 @bot.command(name="helpme")
 async def help(ctx):
     embed = discord.Embed(
