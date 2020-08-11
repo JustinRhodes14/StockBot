@@ -25,7 +25,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.aggregate_indicator('AAPL', 'D'))
 
 # Basic financials
-#print(finnhub_client.company_basic_financials('TWTR', 'all').metric["currentDividendYieldTTM"])
+#print(finnhub_client.company_basic_financials('RTX', 'all').metric["currentDividendYieldTTM"])
 
 # Earnings surprises
 #print(finnhub_client.company_earnings('TSLA', limit=5))
@@ -53,8 +53,8 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.company_profile(cusip='037833100'))
 
 # Company Profile 2
-#print(finnhub_client.company_profile2(symbol='DAL'))
-
+#print(finnhub_client.company_profile2(symbol='AAPL'))
+print(len(finnhub_client.recommendation_trends('swag')))
 # Revenue Estimates
 #print(finnhub_client.company_revenue_estimates('TSLA', freq='quarterly'))
 
@@ -117,7 +117,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 #print(finnhub_client.quote('AAPsL'))
 
 # Recommendation trends
-print(finnhub_client.recommendation_trends('AAPL'))
+#print(finnhub_client.recommendation_trends('AAPL'))
 
 # Stock dividends
 #print(finnhub_client.stock_dividends('KO', _from='2019-01-01', to='2020-01-01'))

@@ -1,5 +1,5 @@
 #BUGS
-#RTX doesnt work since it returns None for its company profile I'm assuming (for both cnews and quote)
+#RTX doesnt work since it returns None for its company profile I'm assuming (for both news and quote)
 #Some stocks don't have pictures (DAL), should use a placeholder value (same with above RTX bug)
 
 #Individual peoples portfolios - Ehhh
@@ -27,6 +27,7 @@ import math
 from datetime import datetime, timedelta
 from pandas_datareader import data
 from bokeh.plotting import figure, show, output_file
+from bokeh.models import ColumnDataSource, Grid, LinearAxis, Plot, Text
 from bokeh.io import export_png
 from selenium.webdriver import Chrome, ChromeOptions
 
@@ -96,22 +97,22 @@ async def quote(ctx,*,stock):
     otherData = finnhub_client.company_basic_financials(stock.upper(), 'all')
 
     current = data.c
-    high = otherData.metric["52WeekHigh"]
-    low = otherData.metric["52WeekLow"]
-    prevclose = data.pc
-    beta = otherData.metric["beta"]
-    peRatio = otherData.metric["peInclExtraTTM"]
-    marketCap = otherData.metric["marketCapitalization"]
-    divYield = float(otherData.metric["currentDividendYieldTTM"])
-    if divYield <= 0:
-        divYield2 = "N/A"
-    else:
-        divYield2 = str(divYield)
-
-    if (high == None and low == None and current == None and prevclose == None):
+    if current == None:
         
         await ctx.send(f"The stock ***{stock.upper()}*** does not exist, please try again.")
-    else:
+    else: 
+        high = otherData.metric["52WeekHigh"]
+        low = otherData.metric["52WeekLow"]
+        prevclose = data.pc
+        beta = otherData.metric["beta"]
+        peRatio = otherData.metric["peInclExtraTTM"]
+        marketCap = otherData.metric["marketCapitalization"]
+        divYield = float(otherData.metric["currentDividendYieldTTM"])
+        if divYield <= 0:
+            divYield2 = "N/A"
+        else:
+            divYield2 = str(divYield)
+
         data2 = finnhub_client.company_profile2(symbol=stock.upper())
         embed = discord.Embed(
         title = data2.name,
@@ -132,8 +133,8 @@ async def quote(ctx,*,stock):
         await ctx.send(embed=embed)
         #await ctx.send(f"Here are todays prices for ***{stock.upper()}***:\n Opening price: ${opening}\n High price: ${high}\n Low price: ${low}\n Current price: ${current}\n Previous closing price: ${prevclose}")
 
-@bot.command(name="cnews")
-async def cnews(ctx,stock,number):
+@bot.command(name="news")
+async def news(ctx,stock,number):
 
     dt = datetime.today() #1 week news report
     dt2 = datetime.today() - timedelta(days=7)
@@ -195,7 +196,8 @@ async def chart(ctx,stock,span):
     df["Middle"] = (df.Open+df.Close)/2
     df["Height"] = abs(df.Open-df.Close)
 
-    p = figure(x_axis_type='datetime',width=1000,height=300,sizing_mode="fixed")
+    p = figure(x_axis_type='datetime',width=1000,height=300,sizing_mode="fixed",background_fill_color="#a3a3a3",background_fill_alpha=.5,
+    y_axis_label="Price",x_axis_label="Date",title=f"Candlestick Data - {stock2}")
     p.grid.grid_line_alpha= 0.3
 
     hours_12 = 12*60*60*1000 #12 hours in milliseconds
@@ -232,9 +234,85 @@ async def chart(ctx,stock,span):
     await ctx.send(file= f)
 
 @bot.command(name="recommend")
-async def chart(ctx,stock):
-    #todo
-    await ctx.send("success")
+async def recommend(ctx,stock):
+    
+    stock2 = stock.upper()
+
+    data = finnhub_client.recommendation_trends(stock2)
+
+    if len(data) == 0:
+        await ctx.send(f"The stock ***{stock.upper()}*** does not exist, please try again.")
+
+    p = figure(x_axis_type='datetime',plot_width=1000,plot_height=300,x_axis_label="Month", 
+           y_axis_label="Recommendations",title=f"Recommendation Trends (6mo) - {stock2}",sizing_mode="fixed",
+          background_fill_color="#a3a3a3",background_fill_alpha=.5)
+    p.grid.grid_line_alpha=0.3
+    p.toolbar.autohide = True
+
+    data2 = data[0:6]
+
+    for item in data2:
+        
+        total = int(item.buy) + int(item.hold) + int(item.sell) + int(item.strong_buy) + int(item.strong_sell)
+        col1 = datetime.strptime(item.period,"%Y-%m-%d") 
+        
+        p.segment(x0= col1, x1=col1,y0=total-int(item.strong_buy),y1=total,line_color="#0f8058",line_width= 40,
+                )
+        glyph1 = Text(x=col1, y=total-(item.strong_buy), text=[str(item.strong_buy)], text_color="#FFFFFF",text_align="center")
+        p.add_glyph(glyph1) if item.strong_buy > 3 else print("swag")
+        total = total-int(item.strong_buy)
+        
+        p.segment(x0= col1, x1=col1,y0=total-int(item.buy),y1=total,line_color="#02c983",line_width= 40,
+                )
+        glyph2 = Text(x=col1, y=total-(item.buy), text=[str(item.buy)], text_color="#FFFFFF",text_align="center")
+        p.add_glyph(glyph2) if item.buy > 3 else print("swag")
+        total = total-int(item.buy)
+        
+        p.segment(x0= col1, x1=col1,y0=total-int(item.hold),y1=total,line_color="#cf8a0a",line_width= 40,
+                )
+        glyph3 = Text(x=col1, y=total-(item.hold), text=[str(item.hold)], text_color="#FFFFFF",text_align="center")
+        p.add_glyph(glyph3) if item.hold > 3 else print("swag")
+        total = total-int(item.hold)
+        
+        p.segment(x0= col1, x1=col1,y0=total-int(item.sell),y1=total,line_color="#ffda08",line_width= 40,
+                )
+        glyph4 = Text(x=col1, y=total-(item.sell), text=[str(item.sell)], text_color="#FFFFFF",text_align="center")
+        p.add_glyph(glyph4) if item.sell > 3 else print("swag")
+        total = total-int(item.sell)
+        
+        p.segment(x0= col1, x1=col1,y0=total-int(item.strong_sell),y1=total,line_color="#b02b13",line_width= 40,
+                )
+        glyph5 = Text(x=col1, y=total-(item.strong_sell), text=[str(item.strong_sell)], text_color="#FFFFFF",text_align="center")
+        p.add_glyph(glyph5) if item.strong_sell > 3 else print("swag")
+    
+    #output_file("RT.html")
+    #show(p)
+    options = ChromeOptions()
+    options.add_argument("--headless")
+
+    web_driver = Chrome(executable_path= "C:\Python38\Lib\site-packages\chromedriver.exe",options = options)
+
+    #output_file("CS.html")
+    export_png(p,filename="RT.png",webdriver = web_driver)
+
+    fileThing = open("RT.png","rb")
+    f = discord.File(fileThing,"Recommendation.png",spoiler = False)
+    
+    data3 = finnhub_client.company_profile2(symbol=stock2)
+    embed = discord.Embed(
+        title = f"{stock2} - Recommendation trends",
+        description = f"Recommendation trends for {data3.name}",
+        colour = discord.Colour.dark_gold()
+        )
+    embed.set_thumbnail(url= data3.logo)
+    #embed.set_image(url= "file:///E:/Projects/Stonk%20Bot/CS.png")
+    embed.add_field(name='Legend', value = "Strong Buy: :evergreen_tree: Buy: :green_square: Hold: :orange_square: Sell: :yellow_square: Strong Sell: :red_square:" ,inline = False)
+    embed.add_field(name='Note', value = "Recommendations less than 3 display no number on the graph" ,inline = False)
+    embed.set_footer(text= f"{data3.ticker} - {data3.exchange} - {data3.country}")
+    
+    await ctx.send(embed=embed)
+    await ctx.send(file=f)
+
 @bot.command(name="helpme")
 async def help(ctx):
     embed = discord.Embed(
@@ -245,7 +323,7 @@ async def help(ctx):
     embed.set_thumbnail(url= "https://cdn.shopify.com/s/files/1/2118/1625/products/000786a-6_2000x2000.png?v=1586266264")
     embed.add_field(name='!quote <STOCK_TICKER>', value = "Returns the stock's prices for the day (opening, low, high, closing, previous closing)" ,inline = False)
     embed.add_field(name='!chart <STOCK_TICKER> <TIME_RANGE>', value = "Returns a half-year candlestick chart for a given stock (Time ranges are as follows:\n Weekly = WK, Half Year = HY, Yearly = Y, Five Year = 5Y" ,inline = False)
-    embed.add_field(name='!cnews <STOCK_TICKER> <ARTICLE_NUMBER>', value = "Returns a news article for a given stock (normally only yields 200 articles)" ,inline = False)
+    embed.add_field(name='!news <STOCK_TICKER> <ARTICLE_NUMBER>', value = "Returns a news article for a given stock (normally only yields 200 articles)" ,inline = False)
     await ctx.send(embed=embed)
 
 @bot.command(name="exit")
@@ -253,10 +331,10 @@ async def exit(ctx):
     await ctx.send("Shutting Down")
     await bot.close()
 
-@cnews.error
-async def cnews_error(ctx,error):
+@news.error
+async def news_error(ctx,error):
     if isinstance(error,commands.MissingRequiredArgument):
-        await ctx.send("Invalid arguments, the command should look like the following: !cnews <STOCK_SYMBOL> <ARTICLE_NUMBER> (without the brackets).")
+        await ctx.send("Invalid arguments, the command should look like the following: !news <STOCK_SYMBOL> <ARTICLE_NUMBER> (without the brackets).")
 
 @quote.error
 async def quote_error(ctx,error):
@@ -265,7 +343,12 @@ async def quote_error(ctx,error):
 
 @chart.error
 async def chart_error(ctx,error):
+    if isinstance(error,commands.MissingRequiredArgument) or isinstance(error,commands.errors.MissingRequiredArgument):
+        await ctx.send("Invalid arguments, the command should look like the following: !chart <STOCK_SYMBOL> <TIME_FRAME> (without the brackets).")
+
+@recommend.error
+async def recommend_error(ctx,error):
     if isinstance(error,commands.MissingRequiredArgument):
-        await ctx.send("Invalid arguments, the command should look like the following: !chart <STOCK_SYMBOL> (without the brackets).")
+        await ctx.send("Invalid arguments, the command should look like the following: !recommend <STOCK_SYMBOL> (without the brackets).")
 
 bot.run(TOKEN)
