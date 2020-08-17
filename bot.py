@@ -51,7 +51,7 @@ finnhub_client = finnhub.DefaultApi(finnhub.ApiClient(configuration))
 
 # 2
 bot = commands.Bot(command_prefix='!')
-
+bot.remove_command('help')
 def inc_dec(c, o):
     if c > o:
         value = "Increase"
@@ -242,6 +242,7 @@ async def recommend(ctx,stock):
 
     if len(data) == 0:
         await ctx.send(f"The stock ***{stock.upper()}*** does not exist, please try again.")
+        return
 
     p = figure(x_axis_type='datetime',plot_width=1000,plot_height=300,x_axis_label="Month", 
            y_axis_label="Recommendations",title=f"Recommendation Trends (6mo) - {stock2}",sizing_mode="fixed",
@@ -313,7 +314,61 @@ async def recommend(ctx,stock):
     await ctx.send(embed=embed)
     await ctx.send(file=f)
 
-@bot.command(name="helpme")
+@bot.command(name="eps")
+async def eps(ctx,stock):
+    stock2 = stock.upper()
+
+    data = finnhub_client.company_earnings(stock2, limit=5)
+
+    if len(data) == 0:
+        await ctx.send(f"The stock ***{stock.upper()}*** does not exist, please try again.")
+        return
+
+    p = figure(x_axis_type='datetime',plot_width=1000,plot_height=300,x_axis_label="Period", 
+           y_axis_label=f"Estimated Price per Share (EPS)",title=f"Quarterly Earnings - {stock2}",sizing_mode="fixed",
+          background_fill_color="#a3a3a3",background_fill_alpha=.5,y_range=[-2,5])
+    p.grid.grid_line_alpha=0.3
+    p.toolbar.autohide = True
+
+
+    for item in data:
+        diff = abs(item.actual-item.estimate)
+        diff = int(diff * 100)
+        diff = float(diff/100)
+        p.circle(x=item.period,y=item.estimate,fill_color="#4098d6",fill_alpha=.5,size=40,line_color="#5c5e5d")
+        p.circle(x=item.period,y=item.actual,fill_color="#2eb361",fill_alpha=.6,size=40,line_color="#5c5e5d")
+        glyph = Text(x=item.period, y= item.actual, text=[f"{str(diff)}"], text_color="#FFFFFF",text_align="center",
+                    text_font_size="12px")
+        p.add_glyph(glyph)
+
+    options = ChromeOptions()
+    options.add_argument("--headless")
+
+    web_driver = Chrome(executable_path= "C:\Python38\Lib\site-packages\chromedriver.exe",options = options)
+
+    #output_file("CS.html")
+    export_png(p,filename="EPS.png",webdriver = web_driver)
+
+    fileThing = open("EPS.png","rb")
+    f = discord.File(fileThing,"QEarnings.png",spoiler = False)
+
+    data3 = finnhub_client.company_profile2(symbol=stock2)
+    embed = discord.Embed(
+        title = f"{stock2} - Quarterly Earnings",
+        description = f"EPS Surprises for {data3.name}",
+        colour = discord.Colour.dark_gold()
+        )
+    embed.set_thumbnail(url= data3.logo)
+    embed.add_field(name='**Legend**', value ="Actual: :green_square: Estimate: :blue_square:" ,inline = False)
+    embed.add_field(name='**Note**', value = "The number represents the difference between the estimate and the actual value (placed on the actual value in green)" ,inline = False)
+    embed.set_footer(text= f"{data3.ticker} - {data3.exchange} - {data3.country}")
+    
+    await ctx.send(embed=embed)
+    await ctx.send(file=f)
+
+
+
+@bot.command(name="help")
 async def help(ctx):
     embed = discord.Embed(
         title = "Stock Bot - User Guide",
@@ -322,8 +377,11 @@ async def help(ctx):
         )
     embed.set_thumbnail(url= "https://cdn.shopify.com/s/files/1/2118/1625/products/000786a-6_2000x2000.png?v=1586266264")
     embed.add_field(name='!quote <STOCK_TICKER>', value = "Returns the stock's prices for the day (opening, low, high, closing, previous closing)" ,inline = False)
-    embed.add_field(name='!chart <STOCK_TICKER> <TIME_RANGE>', value = "Returns a half-year candlestick chart for a given stock (Time ranges are as follows:\n Weekly = WK, Half Year = HY, Yearly = Y, Five Year = 5Y" ,inline = False)
+    embed.add_field(name='!chart <STOCK_TICKER> <TIME_RANGE>', value = "Returns candlestick chart for a given stock *(Time ranges are as follows:\n Weekly = WK, Half Year = HY, Yearly = Y, Five Year = 5Y)*" ,inline = False)
     embed.add_field(name='!news <STOCK_TICKER> <ARTICLE_NUMBER>', value = "Returns a news article for a given stock (normally only yields 200 articles)" ,inline = False)
+    embed.add_field(name='!recommend <STOCK_TICKER>', value = "Returns analyst recommendations as a graph" ,inline = False)
+    embed.add_field(name='!eps <STOCK_TICKER>', value = "Returns a company's quarterly earnings as a graph" ,inline = False)
+    embed.set_footer(text= " ***NOTE***\nFor functions that return chart data, please allow some time for the charts to be made and converted to an image")
     await ctx.send(embed=embed)
 
 @bot.command(name="exit")
@@ -351,4 +409,8 @@ async def recommend_error(ctx,error):
     if isinstance(error,commands.MissingRequiredArgument):
         await ctx.send("Invalid arguments, the command should look like the following: !recommend <STOCK_SYMBOL> (without the brackets).")
 
+@eps.error
+async def eps_error(ctx,error):
+    if isinstance(error,commands.MissingRequiredArgument):
+        await ctx.send("Invalid arguments, the command should look like the following: !eps <STOCK_SYMBOL> (without the brackets).")
 bot.run(TOKEN)
