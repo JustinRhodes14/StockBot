@@ -15,7 +15,7 @@ Currently there are three commands, I will add more to the list as I work on thi
 
 The quote command will return various information/statistics about a given stock, such as the current price, P/E ratio, 52 week high and low, market cap, and more. It returns the company name, the ticker symbol, and the companies logo. Some stocks have placeholder images, however, I plan on adding their respective images in as I learn more about which stocks are lacking images.
 
-!cnews <TICKER_SYMBOL> <ARTICLE_NUMBER>
+!news <TICKER_SYMBOL> <ARTICLE_NUMBER>
 
 The cnews command returns articles related to the given company that may impact its stock in some way. It returns the headline, a link to the article, as well as a summary of the article. It will also return the thumbnail of the article, as well as the companies logo. The command will inform the user how many articles are available, and will let them know which article out of the total amount they are currently looking at.
 
